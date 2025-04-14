@@ -1,5 +1,5 @@
 ## Setup to run Rest API queries via PowerShell
-$tenantname = "azlab.seantoso.com"
+$tenantname = "contoso.com"
 
 Connect-AzAccount -tenant $tenantname
 $securetoken = (Get-AzAccessToken -AsSecureString).Token # Might need to perform Connect-AzAccount first
