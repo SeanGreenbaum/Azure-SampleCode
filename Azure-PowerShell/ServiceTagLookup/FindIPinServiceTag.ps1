@@ -5,8 +5,24 @@
 # IPv6 Support is not implemented yet.
 
 #Written by: Sean.Greenbaum@Microsoft.com
-#Date: 04-14-2025
-#Version: 1.0.0
+#Date: 04-17-2025
+#Version: 1.0.1
+
+# To execute this script to check if an IP address is in the Azure Public Service Tags JSON (live download from Internet):
+# .\FindIPinServiceTag.ps1 -IpAddress <IP Address>
+
+#To execute this script to check if an IP address is in the Azure Government Service Tags JSON (live download from Internet):
+# .\FindIPinServiceTag.ps1 -IpAddress <IP Address> -gov
+
+#To execute this script to check if an IP address is in the Azure Service Tags JSON (local file):
+# .\FindIPinServiceTag.ps1 -IpAddress <IP Address> -file <Path to JSON file>
+
+# Azure JSON files can be downloaded from:
+# https://www.microsoft.com/en-us/download/details.aspx?id=56519 (Public)
+# https://www.microsoft.com/en-us/download/details.aspx?id=57063 (Government)
+
+
+
 
 [CmdletBinding(DefaultParameterSetName="Default")]
 param (
@@ -15,7 +31,7 @@ param (
     [Parameter(Mandatory=$false,ParameterSetName="gov")][switch]$gov
 )
 
-function Test-IPAddressType
+function Test-IPAddressType  #Tests if IP address is IPv4 or IPv6. Will be used later for IPv6 support.
 {
     param (
         [Parameter(Mandatory=$true)][string]$IpAddress
@@ -35,7 +51,7 @@ function Test-IPAddressType
     }
 }
 
-function Test-Ip4InSubnet {
+function Test-Ip4InSubnet { #Checks an IP address against a subnet mask. Returns true if the IP address is in the subnet.
     param (
         [Parameter(Mandatory=$true)][string]$IpAddress,
         [Parameter(Mandatory=$true)][string]$Subnet
@@ -72,29 +88,29 @@ function Test-Ip4InSubnet {
     return $true
 }
 
-$publicURL = "https://www.microsoft.com/en-us/download/details.aspx?id=56519"
-$govURL = "https://www.microsoft.com/en-us/download/details.aspx?id=57063"
+$publicURL = "https://www.microsoft.com/en-us/download/details.aspx?id=56519"  #Azure Public cloud Service Tags download location
+$govURL = "https://www.microsoft.com/en-us/download/details.aspx?id=57063"   #Azure Government cloud Service Tags download location
 
-if ($gov)
+if ($gov) #If using the -gov switch then use the government URL
 {
     $url = $govURL
 }
-else {
+else { #If not using the -gov switch then use the public URL
     $url = $publicURL
 }
 
-if (-not $file)
+if (-not $file)  #If not using the -file switch then download the JSON file from the Microsoft website
 {
     $page = Invoke-WebRequest -Uri $url
 
-    $AzureServiceTags = ($page.Links | Where {$_.href -like "*ServiceTags_*.json"}).href
+    $AzureServiceTags = ($page.Links | Where {$_.href -like "*ServiceTags_*.json"}).href #Check the page links for the JSON file URL
     if (-not $AzureServiceTags) {
         Write-Error "Error: Unable to find the JSON URL in the page content."
         exit 1
     }
-    $jsonContent = Invoke-RestMethod -Uri $AzureServiceTags
+    $jsonContent = Invoke-RestMethod -Uri $AzureServiceTags #Download the JSON file from the URL
 }
-else 
+else #The -file switch was used so use the local file path provided by the user
 {
     $content = Get-Content -Path $file -Raw
     $jsonContent = $content | ConvertFrom-Json
@@ -102,7 +118,7 @@ else
 
 $count = 0
 
-ForEach ($tag in $jsonContent.values) 
+ForEach ($tag in $jsonContent.values) #Search the JSON data for the IP address
 {
     if ((Test-IPAddressType -IpAddress $IpAddress) -eq "IPv4")
     {
