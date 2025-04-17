@@ -67,7 +67,7 @@ Total number of matches: 4
 ```
 
 ## Notes
-- Ensure you have either an internet connection to be able to access the lates JSON file online, or you have already downloaded the JSON file locally.
+- Ensure you have either an internet connection to be able to access the latest JSON file online, or you have already downloaded the JSON file locally.
 
 ## Limitations
 Currently the script does not parse or check IPv6 addresses. Azure does support IPv6 and Service Tags do contain IPv6 information, it just isn't yet in the scripts abilities.
