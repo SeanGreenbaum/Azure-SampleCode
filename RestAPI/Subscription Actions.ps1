@@ -11,7 +11,7 @@ $managementURL = "management.usgovcloudapi.net/" #Azure US Gov Cloud
 $subscriptionid = (Get-AzContext).Subscription.Id
 $apiversion = "2024-07-01"
 $uri = "https://$managementURL/subscriptions/$subscriptionid/locations?api-version=$apiversion"
-$Result = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -Body $body -ContentType "application/json"
+$Result = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ContentType "application/json"
 $Result.value | Select-Object name, displayname, availabilityZoneMappings
 
 #Loop through multuple subscriptions and get the logical zone to physical zone mappings:
@@ -25,7 +25,7 @@ $subscriptions = @(
 $AllResults = @()
 ForEach ($Sub in $subscriptions) {
     $uri = "https://$managementURL/subscriptions/$Sub/locations?api-version=$apiversion"
-    $Result = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -Body $body -ContentType "application/json"
+    $Result = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ContentType "application/json"
     $AllResults += $Result.value | Where-Object {$_.name -eq $region} | Select-Object id, name, displayname, availabilityZoneMappings
 }
 $AllResults | Out-String -Width 1000000 | Out-File .\zonemappings.txt
